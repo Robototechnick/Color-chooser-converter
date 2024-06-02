@@ -1,0 +1,107 @@
+from tkinter import *
+from tkinter import ttk
+from tkinter import colorchooser
+from tkinter.messagebox import showerror as err
+
+def _no():
+    global hex_
+    w.destroy()
+    hex_["state"] = "normal"
+def _ok():
+    hex_ = entry.get()
+    try:
+        out["fg"] = hex_
+        res2["text"] = f"Код цвета (HEX): {hex_}"
+    except: err(f"Цветовая выборка - Ошибка", "Простите, но "+'"'+hex_+'"'+"\n"+"не включён в цветовую модель HEX")
+    ch_res()
+def ch_res():
+    rgb = hex_to_rgb(out["fg"])
+    hex_ = out["fg"]
+    res1["text"] = f"RGB: Красный {rgb[0]}, Зелёный {rgb[1]}, Синий {rgb[2]}"
+    res2["text"] = f"Код цвета (HEX): {hex_}"
+    
+def rgb_to_hex(rgb): #Массив!
+    return '#%02x%02x%02x' % rgb
+
+def hex_to_rgb(value):
+    value = value.lstrip('#')
+    lv = len(value)
+    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+def chan_col():
+    global w, entry
+    col = colorchooser.askcolor(initialcolor=out["fg"])
+    out["fg"] = col[1]
+    ch_res()
+    entry.delete(0, END)
+    entry.insert(0, out["fg"]) 
+
+def reverse():
+    global w, entry
+    if out["fg"] == "SystemButtonText":
+        out["fg"] = "#000000"
+    col = hex_to_rgb(out["fg"])
+    r = col[0]
+    g = col[1]
+    b = col[2]
+    r1 = 255-r
+    g1 = 255-g
+    b1 = 255-b
+    new = rgb_to_hex((r1, g1, b1))
+    out["fg"] = new    
+    ch_res()
+    entry.delete(0, END)
+    entry.insert(0, out["fg"])
+
+def hex_ret():
+    global hex_, w
+    hex_["state"] = "normsl"
+    w.destroy()
+    
+def hex_run():
+    global w, entry, hex_
+    w = Tk()
+    w.resizable(0,0)
+    w.title("HEX")
+    label = Label(w, text="Введите код цвета HEX (например, #ffffff):")\
+        .grid(columnspan=2)
+    entry = ttk.Entry(w, width=25)
+    entry.grid(column=0, row=1)
+    if out["fg"] == "SystemButtonText":
+        out["fg"] = "#000000"
+    entry.insert(0, out["fg"]) 
+    
+    ok = ttk.Button(w, text="Применить", command=_ok).grid(column=1, row=1)
+    no = ttk.Button(w, text="Закрыть", command=_no).grid(column=1, row=2)
+    hex_["state"] = "disable"
+    w.protocol("WM_DELETE_WINDOW", hex_ret)
+    w.mainloop()
+    return w
+
+def close():
+    global w
+    root.destroy()
+    w.destroy()
+    
+root = Tk()
+root.geometry("320x90")
+out = Label(text="██", font="Arial 30", bg="#000000")
+out.place(x=5, y=5)
+
+chc = ttk.Button(text="Сменить цвет", command=chan_col).place(x=4, y=60)
+hex_= ttk.Button(text="Задать HEX", command=hex_run)
+hex_.place(y=60, x=120)
+rc = ttk.Button(text="Обратить цвет", command=reverse).place(x=227, y=60)
+
+
+res1 = Label(text="RGB: Красный 0, Зелёный 0, Синий 0")
+res1.place(x=70, y=5)
+
+
+res2 = Label(text="Код цвета (HEX): #000000")
+res2.place(x=70, y=30)
+
+root.protocol("WM_DELETE_WINDOW", close)
+root.title("Цветовая выборка")
+root.resizable(0,0)
+root.mainloop()
